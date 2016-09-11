@@ -31,9 +31,6 @@ public class AssignSplatMap : MonoBehaviour
                 // Sample the height at this location (note GetHeight expects int coordinates corresponding to locations in the heightmap array)
                 float height = terrainData.GetHeight(Mathf.RoundToInt(y_01 * terrainData.heightmapHeight), Mathf.RoundToInt(x_01 * terrainData.heightmapWidth));
 
-                // Calculate the normal of the terrain (note this is in normalised coordinates relative to the overall terrain dimensions)
-                Vector3 normal = terrainData.GetInterpolatedNormal(y_01, x_01);
-
                 // Calculate the steepness of the terrain
                 float steepness = terrainData.GetSteepness(y_01, x_01);
 

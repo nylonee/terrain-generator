@@ -40,6 +40,16 @@ public class CameraScript : MonoBehaviour {
     void Update()
     {
 
+        _cube = GameObject.FindGameObjectWithTag("Box");
+
+        // Get the attached terrain component
+        Terrain terrain = (Terrain)(GameObject.FindGameObjectWithTag("Terrain")).GetComponent("Terrain");
+
+
+        // Get a reference to the terrain data
+        terrainData = terrain.terrainData;
+        //gameObject.AddComponent<TerrainCollider>().terrainData = terrainData;
+
         if (Input.GetKey(KeyCode.W))
         {
             transform.Translate(Vector3.forward * speed);
@@ -77,10 +87,10 @@ public class CameraScript : MonoBehaviour {
 
 
         // Check that the new position doesn't put the camera outside of the box
-        /*float minX = _cube.transform.position.x;
-        float maxX = _cube.transform.position.x + _cube.transform.localScale.x;
-        float minZ = _cube.transform.position.z;
-        float maxZ = _cube.transform.position.z + _cube.transform.localScale.z;
+        float minX = _cube.transform.position.x - (_cube.transform.localScale.x/2);
+        float maxX = _cube.transform.position.x + (_cube.transform.localScale.x/2);
+        float minZ = _cube.transform.position.z - (_cube.transform.localScale.z/2);
+        float maxZ = _cube.transform.position.z + (_cube.transform.localScale.z/2);
 
         if(transform.position.x < minX)
         {
@@ -97,15 +107,15 @@ public class CameraScript : MonoBehaviour {
         if (transform.position.z > maxZ)
         {
             transform.position = new Vector3(transform.position.x, transform.position.y, maxZ);
-        }*/
+        }
 
         // Check that the camera is always above the terrain
 
         // Sample the height at this location (note GetHeight expects int coordinates corresponding to locations in the heightmap array)
         float height = terrainData.GetHeight((int)transform.position.x, (int)transform.position.z);
-        if(transform.position.y < height + 0.2f)
+        if(transform.position.y < height + 0.5f)
         {
-            //transform.position = new Vector3(transform.position.x, height + 0.2f, transform.position.y);
+            transform.position = new Vector3(transform.position.x, height + 0.5f, transform.position.z);
         }
     }
 }

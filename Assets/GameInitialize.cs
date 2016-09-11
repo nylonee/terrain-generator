@@ -5,22 +5,67 @@ public class GameInitialize : MonoBehaviour {
     
     public int mapSize = 10;
     public float magnitude = 0.5f;
+    public Material waterMaterial;
+
+    public Shader shader;
+    public Shader waterShader;
+    public PointLight sun;
 
     float[,] mapArray;
     GameObject _terrain;
     TerrainData _terrainData;
     GameObject _camera;
-    GameObject _boundary;
 
     // Use this for initialization
     void Start () {
-        //XXX: Create boundaries
 
         // Set the random seed to system time
         Random.seed = (int)System.DateTime.Now.Ticks;
 
         // Generate the terrain using diamond square algorithm
         DiamondSquareAlgorithm();
+
+        // Generate water by creating a plane
+        Mesh m = new Mesh();
+        m.name = "Water";
+        m.vertices = new[] {
+            new Vector3(-1.0f, 0f, -1.0f),
+            new Vector3(-1.0f, 0f, 1.0f),
+            new Vector3(1.0f, 0f, 1.0f),
+            new Vector3(-1.0f, 0f, -1.0f),
+            new Vector3(1.0f, 0f, 1.0f),
+            new Vector3(1.0f, 0f, -1.0f)
+        };
+
+        // Vertex normals
+        Vector3 topNormal = (new Vector3(0f, 1.0f, 0f));
+        m.normals = new[]
+        {
+            topNormal,
+            topNormal,
+            topNormal,
+            topNormal,
+            topNormal,
+            topNormal
+        };
+
+        int[] triangles = new int[m.vertices.Length];
+        for (int i = 0; i < m.vertices.Length; i++)
+            triangles[i] = i;
+        m.triangles = triangles;
+        
+        GameObject water = GameObject.CreatePrimitive(PrimitiveType.Plane);
+
+        MeshRenderer renderer = water.GetComponent<MeshRenderer>();
+        renderer.material.SetFloat("_Mode", 3.0f);
+        renderer.material.color = new Color(0.0f, 0.0f, 1.0f, 0.3f);
+
+        MeshFilter waterMesh = water.GetComponent<MeshFilter>();
+        waterMesh.mesh = m;
+
+        water.transform.position = new Vector3(_terrain.transform.position.x + (Mathf.Pow(2, mapSize) + 1) / 2, Mathf.Pow(_terrainData.GetHeight((int)transform.position.x, (int)transform.position.z), 0.5f), _terrain.transform.position.z + (Mathf.Pow(2, mapSize) + 1) / 2);
+        water.transform.localScale = new Vector3(_terrainData.size.x/2, 0, _terrainData.size.z/2);
+
 
         // Set the camera to around the center of the generated terrain
         SetCameraPosition();
@@ -180,6 +225,10 @@ public class GameInitialize : MonoBehaviour {
         // Attach a splat component for texture
         _terrain.AddComponent(typeof(AssignSplatMap));
 
+        MeshRenderer renderer = _terrain.AddComponent<MeshRenderer>();
+        renderer.material.shader = shader;
+
+
         // Generate water for terrain that's below 0.2?
 
 
@@ -188,7 +237,9 @@ public class GameInitialize : MonoBehaviour {
     // Update is called once per frame
     void Update()
     {
-
-
+        // Pass updated light positions to shader
+        MeshRenderer renderer = _terrain.GetComponent<MeshRenderer>();
+        renderer.material.SetColor("_PointLightColor", sun.color);
+        renderer.material.SetVector("_PointLightPosition", sun.GetWorldPosition());
     }
 }
